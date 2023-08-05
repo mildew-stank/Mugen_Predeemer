@@ -1,5 +1,5 @@
 # Usage
-This can create a channel point reward that can be redeemed to send an AI vs AI fight request. You will recieve a list of requests and be given the option to start the fight or refund the request. A prediction will be created before the fight begins, by default, but the result must be chosen manually.
+This can create a channel point reward that may be redeemed to send an AI vs AI fight request. You will recieve a list of requests and be given the option to start the fight or refund the request. A prediction will be created before the fight begins, by default, but the result must be chosen manually.
 
 # Setup
 Authorize Predeemer [here](https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=ah4yv3x5c0h7ma514krs9von6xwgm7&redirect_uri=http://localhost&scope=channel%3Amanage%3Aredemptions+channel%3Amanage%3Apredictions), then copy your access_token from the URL bar after being redirected to an invalid web page.
