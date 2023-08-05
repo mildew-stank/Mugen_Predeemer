@@ -1,4 +1,5 @@
 # Usage
+<img align="left" height="600" src="https://i.imgur.com/LYtxyMV.jpg">
 This can create a channel point reward that may be redeemed to send an AI vs AI fight request back to the program. It will recieve a list of requests and you will be given the option to launch Mugen straight into the fight or issue a channel point refund. A prediction will be created before the fight begins, by default, but the result must be chosen manually.
 
 # Setup
