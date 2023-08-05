@@ -14,4 +14,4 @@ Your viewers will need to know what characters can be requested, and for that yo
 Download [Python](https://www.python.org/) and run "pip install -r requirements.txt" in a terminal from the project directory, or run "pip install pyqt5" and "pip install requests" from any directory.
 
 # Known issues
-Twitch rewards and predictions are only available to partnered streamers, not developers. I have no way to properly test this program, so keep an eye on the status bar at the bottom for errors. A detailed error log will be generated in the *cache* folder. The worst that can happen is you'll end up having to managing the rewards and predictions on your own.
+Twitch rewards and predictions are only available to partnered streamers, not developers. I have no way to properly test this program, so keep an eye on the status bar at the bottom for errors. A detailed error log will be generated in the *cache* folder. The worst that can happen is you'll end up having to manage the rewards and predictions on your own.
