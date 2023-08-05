@@ -30,6 +30,7 @@ class GUI(QMainWindow):
         self.reward_id = ""
         self.list_dictionary = {}
         self.character_dictionary = {}
+        self.stages = []
 
         uic.loadUi("base/manager.ui", self)
         self.action_export_fighter_names.triggered.connect(self.export_fighter_names)
@@ -85,6 +86,7 @@ class GUI(QMainWindow):
         try:
             character_select_set = mugen.get_select_character_set(self.motif_input.text(), path)
             self.character_dictionary = mugen.make_character_dictionary(character_select_set, path)
+            self.stages = mugen.get_stage_list(path)
         except:
             self.status_bar.showMessage("ERROR: Unexpected directory", 5000)
             return
@@ -118,7 +120,7 @@ class GUI(QMainWindow):
         wait_time = 0
         path = self.mugen_path_input.text()
         motif = self.motif_input.text()
-        stage = random.choice(mugen.get_stage_list(path))
+        stage = random.choice(self.stages)
 
         if self.action_predictions.isChecked():
             wait_time = 30
