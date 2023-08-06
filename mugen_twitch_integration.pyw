@@ -18,8 +18,8 @@ from PyQt5.QtWidgets import (
     QMainWindow,
 )
 
-import predeemer
-import mugen
+from predeemer import Predeemer
+from mugen import Mugen
 
 
 class GUI(QMainWindow):
@@ -27,13 +27,15 @@ class GUI(QMainWindow):
         super(GUI, self).__init__()
 
         self.predeemer = None
+        self.mugen = Mugen()
         self.reward_id = ""
-        self.list_dictionary = {}
+        self.request_dictionary = {}
         self.character_dictionary = {}
         self.stages = []
 
         uic.loadUi("base/manager.ui", self)
         self.action_export_fighter_names.triggered.connect(self.export_fighter_names)
+        self.mugen_path_input.textChanged.connect(self.update_path)
         self.browse_button.clicked.connect(self.browse_path)
         self.start_button.clicked.connect(self.start_integration)
         self.requests_list.itemClicked.connect(self.on_item_clicked)
@@ -50,10 +52,9 @@ class GUI(QMainWindow):
             os.makedirs("cache")
 
     def export_fighter_names(self):
-        path = self.mugen_path_input.text()
         try:
-            character_select_set = mugen.get_select_character_set(self.motif_input.text(), path)
-            self.character_dictionary = mugen.make_character_dictionary(character_select_set, path)
+            character_select_set = self.mugen.get_select_character_set(self.motif_input.text())
+            self.character_dictionary = self.mugen.make_character_dictionary(character_select_set)
         except:
             self.status_bar.showMessage("ERROR: Unexpected directory", 5000)
             return
@@ -61,6 +62,8 @@ class GUI(QMainWindow):
             out_file.writelines([string + '\n' for string in self.character_dictionary.keys()])
         self.status_bar.showMessage("Exported to cache/fighters.txt", 5000)
 
+    def update_path(self):
+        self.mugen.path = self.mugen_path_input.text()
 
     def browse_path(self):
         path = QFileDialog.getExistingDirectory(self, "Select Folder")
@@ -73,25 +76,24 @@ class GUI(QMainWindow):
             try:
                 self.predeemer.delete_custom_reward(self.reward_id)
             except:
-                self.status_bar.showMessage("ERROR: Failed to delete delete reward", 5000)
+                self.status_bar.showMessage("ERROR: Failed to delete reward", 5000)
             self.start_button.setText("Start")
             return
 
         access_token = self.access_token_input.text()
-        path = self.mugen_path_input.text()
         amount = self.amount_spin_box.value()
         cost = self.cost_spin_box.value()
         is_one_per_user = self.action_one_redeem_per_user.isChecked()
 
         try:
-            character_select_set = mugen.get_select_character_set(self.motif_input.text(), path)
-            self.character_dictionary = mugen.make_character_dictionary(character_select_set, path)
-            self.stages = mugen.get_stage_list(path)
+            character_select_set = self.mugen.get_select_character_set(self.motif_input.text())
+            self.character_dictionary = self.mugen.make_character_dictionary(character_select_set)
+            self.stages = self.mugen.get_stage_list()
         except:
             self.status_bar.showMessage("ERROR: Unexpected directory", 5000)
             return
         try:
-            self.predeemer = predeemer.Predeemer("ah4yv3x5c0h7ma514krs9von6xwgm7", access_token)
+            self.predeemer = Predeemer("ah4yv3x5c0h7ma514krs9von6xwgm7", access_token)
         except:
             self.status_bar.showMessage("ERROR: Failed to initialize integration", 5000)
             return
@@ -118,7 +120,6 @@ class GUI(QMainWindow):
             self.status_bar.showMessage("ERROR: Could not parse request", 5000)
             return
         wait_time = 0
-        path = self.mugen_path_input.text()
         motif = self.motif_input.text()
         stage = random.choice(self.stages)
 
@@ -134,7 +135,7 @@ class GUI(QMainWindow):
             status_timer = threading.Timer(wait_time, self.on_prediction_end)
             status_timer.start()
 
-        mugen_timer = threading.Timer(wait_time, mugen.run, [motif, character_ids, stage, path])
+        mugen_timer = threading.Timer(wait_time, self.mugen.run, [motif, character_ids, stage])
         mugen_timer.start()
         try:
             self.handle_redemption("FULFILLED")
@@ -167,18 +168,18 @@ class GUI(QMainWindow):
 
     def remove_entry(self):
         selected_item = self.requests_list.currentItem().text()
-        del self.list_dictionary[selected_item]
+        del self.request_dictionary[selected_item]
         self.requests_list.takeItem(self.requests_list.currentRow())
 
     def handle_redemption(self, status):
         selected_item = self.requests_list.currentItem().text()
-        redemption_id = self.list_dictionary[selected_item][0]
+        redemption_id = self.request_dictionary[selected_item][0]
         self.predeemer.update_redemption_status(self.reward_id, redemption_id, status)
 
     def refund_all(self):
         failures = 0
 
-        for request in self.list_dictionary:
+        for request in self.request_dictionary:
             try:
                 self.predeemer.update_redemption_status(self.reward_id, request[0], "CANCELED")
             except:
@@ -187,7 +188,7 @@ class GUI(QMainWindow):
         if failures > 0:
             self.status_bar.showMessage(f"ERROR: Failed to issue {failures} refunds")
 
-        self.list_dictionary.clear()
+        self.request_dictionary.clear()
         self.requests_list.clear()
 
     def refresh_list(self):
@@ -198,12 +199,12 @@ class GUI(QMainWindow):
 
         for entry in data["data"]:
             list_item = f"{slot_number:0>{2}}: {entry['user_input']}"
-            self.list_dictionary.update({list_item: [entry["id"], entry["user_name"]]})
+            self.request_dictionary.update({list_item: [entry["id"], entry["user_name"]]})
             self.requests_list.addItem(list_item)
             slot_number += 1
 
     def on_item_clicked(self, clicked):
-        self.status_bar.showMessage(self.list_dictionary[clicked.text()][1], 3000)
+        self.status_bar.showMessage(self.request_dictionary[clicked.text()][1], 3000)
 
     def load_data(self):
         try:
