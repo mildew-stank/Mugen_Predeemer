@@ -32,8 +32,9 @@ class Mugen:
                 not parse_line
                 or parse_line[0] == ";"
                 or parse_line == "randomselect"
+                or parse_line == "-/"
                 or parse_line == "[Characters]"
-            ):  # ignore whitespace, comment lines, randomselect, and characters tag
+            ):  # ignore whitespace, comment lines, randomselect, blanks, and characters tag
                 continue
             if parse_line[0] == "[":  # stop when a new tag begins
                 break
